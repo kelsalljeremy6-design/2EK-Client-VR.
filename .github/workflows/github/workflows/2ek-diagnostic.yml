@@ -1,0 +1,17 @@
+
+name: 2EK Client - Actions Diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check GitHub Actions
+        run: |
+          echo "GitHub Actions runner started."
+          echo "2EK Client diagnostic passed."

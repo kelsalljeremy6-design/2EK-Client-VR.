@@ -24,26 +24,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
+  
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-              - name: Set up Android SDK
-          uses: android-actions/setup-android@v3
-        - name: Accept Android SDK licenses
-          run: yes | sdkmanager --licenses
-        - name: Install Android packages
-          run: |
-            sdkmanager \
-              "platform-tools" \
-              "build-tools;34.0.0" \
-              "platforms;android-34" \
-              "cmdline-tools;latest" \
-              "cmake;3.10.2.4988404" \
-              "ndk;23.2.8568313"
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses
+
+      - name: Install Android packages
+        run: |
+          sdkmanager \
+            "platform-tools" \
+            "build-tools;34.0.0" \
+            "platforms;android-34" \
+            "cmdline-tools;latest" \
+            "cmake;3.10.2.4988404" \
+            "ndk;23.2.8568313"
 
       - name: Set up Godot
         uses: chickensoft-games/setup-godot@v2

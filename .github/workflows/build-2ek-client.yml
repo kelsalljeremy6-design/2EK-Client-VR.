@@ -6,34 +6,22 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "project.godot"
-      - "export_presets.cfg"
-      - "game/**"
-      - "addons/**"
-      - ".github/workflows/build-2ek-client.yml"
 
 permissions:
   contents: read
 
-concurrency:
-  group: 2ek-client-quest-build
-  cancel-in-progress: false
-
 jobs:
   build-quest-apk:
-    name: Build Android Quest APK
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    name: Build Quest APK
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
 
     env:
       GODOT_VERSION: "4.7.2"
       OPENXR_VENDORS_VERSION: "5.1.0-stable"
-      ANDROID_HOME: /usr/local/lib/android/sdk
-      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
 
     steps:
-      - name: Checkout 2EK Client
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Java 17
@@ -42,10 +30,10 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Install Android SDK
+      - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Android build packages
+      - name: Install Android packages
         run: |
           sdkmanager "platform-tools" \
             "build-tools;34.0.0" \
@@ -54,41 +42,36 @@ jobs:
             "cmake;3.10.2.4988404" \
             "ndk;23.2.8568313"
 
-            - name: Set up Godot
+      - name: Set up Godot
         uses: chickensoft-games/setup-godot@v2
         with:
           version: 4.7.2
           use-dotnet: false
           include-templates: true
-          cache: false
 
       - name: Install OpenXR vendor plugin
-        shell: bash
         run: |
-          set -euo pipefail
+          set -e
           curl -fL \
             "https://github.com/GodotVR/godot_openxr_vendors/releases/download/${OPENXR_VENDORS_VERSION}/godotopenxrvendorsaddon.zip" \
-            -o /tmp/godot-openxr-vendors.zip
+            -o /tmp/openxr.zip
+          unzip -q /tmp/openxr.zip -d /tmp/openxr
+          test -d /tmp/openxr/asset/addons/godotopenxrvendors
           mkdir -p addons
-          unzip -q /tmp/godot-openxr-vendors.zip -d /tmp/openxr-vendors
-          test -d /tmp/openxr-vendors/asset/addons/godotopenxrvendors
           rm -rf addons/godotopenxrvendors
-          mv /tmp/openxr-vendors/asset/addons/godotopenxrvendors addons/
+          mv /tmp/openxr/asset/addons/godotopenxrvendors addons/
 
-      - name: Verify Quest export preset
-        shell: bash
+      - name: Verify Android Quest preset
         run: |
-          set -euo pipefail
           grep -q 'name="Android Quest"' export_presets.cfg
           grep -q 'architectures/arm64-v8a=true' export_presets.cfg
-          echo "Android Quest preset and ARM64 configuration found."
 
       - name: Import Godot project
         run: godot --headless --editor --path . --import
 
       - name: Export Quest APK
         run: |
-          set -euo pipefail
+          set -e
           mkdir -p build/android-quest
           godot --headless \
             --path . \

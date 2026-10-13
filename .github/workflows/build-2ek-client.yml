@@ -18,7 +18,7 @@ permissions:
 
 concurrency:
   group: 2ek-client-quest-build
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build-quest-apk:
